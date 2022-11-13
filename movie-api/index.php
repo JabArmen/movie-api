@@ -22,9 +22,15 @@ $app->setBasePath("/movie-api");
 
 //-- Step 5) Include the files containing the definitions of the callbacks.
 require_once './includes/routes/movie_routes.php';
+require_once './includes/routes/actor_routes.php';
+require_once './includes/routes/character_routes.php';
+require_once './includes/routes/director_routes.php';
+// require_once './includes/routes/review_routes.php';
+// require_once './includes/routes/show_routes.php';
+// require_once './includes/routes/studio_routes.php';
 
 //-- Step 6)
-// get requests
+// movie requests
 $app->get("/movies", "handleGetAllMovies");
 $app->get("/movies/{movie_id}", "handleGetMovieById");
 
@@ -34,6 +40,35 @@ $app->post("/movies", "handleCreateMovie");
 
 $app->put("/movies", "handleUpdateMovie");
 
+//actor requests
+$app->get("/actors", "handleGetAllActors");
+$app->get("/actors/{actor_id}", "handleGetActorById");
+
+$app->delete("/actors/{actor_id}","handleDeleteActor");
+
+$app->post("/actors", "handleCreateActor");
+
+$app->put("/actors", "handleUpdateActor");
+
+//character requests
+$app->get("/characters", "handleGetAllCharacters");
+$app->get("/characters/{character_id}", "handleGetCharacterById");
+
+$app->delete("/characters/{character_id}","handleDeleteCharacter");
+
+$app->post("/characters", "handleCreateCharacter");
+
+$app->put("/characters", "handleUpdateCharacter");
+
+//director requests
+$app->get("/directors", "handleGetAllDirectors");
+$app->get("/directors/{director_id}", "handleGetDirectorById");
+
+$app->delete("/directors/{director_id}","handleDeleteDirector");
+
+$app->post("/directors", "handleCreateDirector");
+
+$app->put("/directors", "handleUpdateDirector");
 
 // Run the app.
 $app->run();
