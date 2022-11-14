@@ -25,9 +25,9 @@ require_once './includes/routes/movie_routes.php';
 require_once './includes/routes/actor_routes.php';
 require_once './includes/routes/character_routes.php';
 require_once './includes/routes/director_routes.php';
-// require_once './includes/routes/review_routes.php';
-// require_once './includes/routes/show_routes.php';
-// require_once './includes/routes/studio_routes.php';
+require_once './includes/routes/review_routes.php';
+require_once './includes/routes/show_routes.php';
+require_once './includes/routes/studio_routes.php';
 
 //-- Step 6)
 // movie requests
@@ -69,6 +69,36 @@ $app->delete("/directors/{director_id}","handleDeleteDirector");
 $app->post("/directors", "handleCreateDirector");
 
 $app->put("/directors", "handleUpdateDirector");
+
+//review requests
+$app->get("/reviews", "handleGetAllReviews");
+$app->get("/reviews/{review_id}", "handleGetReviewById");
+
+$app->delete("/reviews/{review_id}","handleDeleteReview");
+
+$app->post("/reviews", "handleCreateReview");
+
+$app->put("/reviews", "handleUpdateReview");
+
+//show requests
+$app->get("/shows", "handleGetAllShows");
+$app->get("/shows/{show_id}", "handleGetShowById");
+
+$app->delete("/shows/{show_id}","handleDeleteShow");
+
+$app->post("/shows", "handleCreateShow");
+
+$app->put("/shows", "handleUpdateShow");
+
+//studio requests
+$app->get("/studios", "handleGetAllStudios");
+$app->get("/studios/{studio_id}", "handleGetStudioById");
+
+$app->delete("/studios/{studio_id}","handleDeleteStudio");
+
+$app->post("/studios", "handleCreateStudio");
+
+$app->put("/studios", "handleUpdateStudio");
 
 // Run the app.
 $app->run();
