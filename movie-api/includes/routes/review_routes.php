@@ -107,6 +107,7 @@ function handleGetAllReviews(Request $request, Response $response, array $args)
     $response_data = array();
     $response_code = HTTP_OK;
     $review_model = new ReviewModel();
+    $filter_params = $request->getQueryParams();
 
     $reviews = $review_model->getAll();
     // Handle serve-side content negotiation and produce the requested representation.    

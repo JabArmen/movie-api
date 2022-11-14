@@ -102,6 +102,7 @@ function handleGetAllStudios(Request $request, Response $response, array $args)
     $response_data = array();
     $response_code = HTTP_OK;
     $studio_model = new StudioModel();
+    $filter_params = $request->getQueryParams();
 
     $studios = $studio_model->getAll();
     // Handle serve-side content negotiation and produce the requested representation.    

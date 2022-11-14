@@ -104,6 +104,7 @@ function handleGetAllDirectors(Request $request, Response $response, array $args
     $response_data = array();
     $response_code = HTTP_OK;
     $director_model = new DirectorModel();
+    $filter_params = $request->getQueryParams();
 
     $directors = $director_model->getAll();
     // Handle serve-side content negotiation and produce the requested representation.    

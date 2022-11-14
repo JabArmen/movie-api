@@ -27,16 +27,53 @@ class MovieModel extends BaseModel
     }
 
     /**
-     * Get a list of moviess whose name matches or contains the provided value.       
+     * Get a list of movies whose name matches or contains the provided value.       
      * @param string $movieTitle 
      * @return array An array containing the matches found.
      */
     public function getWhereLike($movieTitle)
     {
-        $sql = "SELECT * FROM movies WHERE Title LIKE :title";
+        $sql = "SELECT * FROM movies WHERE title LIKE :title";
         $data = $this->run($sql, [":title" => $movieTitle . "%"])->fetchAll();
         return $data;
     }
+    /**
+     * Get a list of movies whose name matches or contains the provided value.       
+     * @param string $genre 
+     * @return array An array containing the matches found.
+     */
+    public function getMovieByGenre($genre)
+    {
+        $sql = "SELECT * FROM movies WHERE genre LIKE :genre";
+        $data = $this->run($sql, [":genre" => $genre . "%"])->fetchAll();
+        return $data;
+    }
+
+    /**
+     * Get a list of movies whose name matches or contains the provided value.       
+     * @param string $release_date 
+     * @return array An array containing the matches found.
+     */
+    public function getMovieByReleaseDate($release_date)
+    {
+        $sql = "SELECT * FROM movies WHERE release_date LIKE :release_date";
+        $data = $this->run($sql, [":release_date" => $release_date . "%"])->fetchAll();
+        return $data;
+    }
+
+    /**
+     * Get a list of movies whose name matches or contains the provided value.       
+     * @param string $movieTitle 
+     * @return array An array containing the matches found.
+     */
+    public function getMovieByBudget($movieBudget)
+    {
+        $sql = "SELECT * FROM movies WHERE budget LIKE :budget";
+        $data = $this->run($sql, [":budget" => $movieBudget . "%"])->fetchAll();
+        return $data;
+    }
+
+
 
     /**
      * Retrieve a movie by its id.
@@ -97,7 +134,7 @@ class MovieModel extends BaseModel
         $data = $this->update($this->table_name, $data, $id);
         return $data;
     }
-    
+
     /**
      * delete an movie
      * @param int $movie_id

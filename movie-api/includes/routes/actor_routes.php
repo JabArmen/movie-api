@@ -102,6 +102,7 @@ function handleGetAllActors(Request $request, Response $response, array $args)
     $response_data = array();
     $response_code = HTTP_OK;
     $actor_model = new ActorModel();
+    $filter_params = $request->getQueryParams();
 
     $actors = $actor_model->getAll();
     // Handle serve-side content negotiation and produce the requested representation.    

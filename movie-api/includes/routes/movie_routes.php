@@ -110,8 +110,21 @@ function handleGetAllMovies(Request $request, Response $response, array $args)
     $response_data = array();
     $response_code = HTTP_OK;
     $movie_model = new MovieModel();
-
-    $movies = $movie_model->getAll();
+    $filter_params = $request->getQueryParams();
+    if ($filter_params) {
+        // Fetch the list of artists matching the provided name.
+        if (isset($filter_params['title']))
+            $movies = $movie_model->getWhereLike($filter_params["title"]);
+        if (isset($filter_params['budget']))
+            $movies = $movie_model->getMovieByBudget($filter_params["budget"]);
+        if (isset($filter_params['release_date']))
+            $movies = $movie_model->getMovieByReleaseDate($filter_params["release_date"]);
+        if (isset($filter_params['genre']))
+            $movies = $movie_model->getMovieByGenre($filter_params["genre"]);
+    } else {
+        // No filtering by artist name detected.
+        $movies = $movie_model->getAll();
+    }
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--

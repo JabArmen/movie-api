@@ -104,6 +104,7 @@ function handleGetAllCharacters(Request $request, Response $response, array $arg
     $response_data = array();
     $response_code = HTTP_OK;
     $character_model = new CharacterModel();
+    $filter_params = $request->getQueryParams();
 
     $characters = $character_model->getAll();
     // Handle serve-side content negotiation and produce the requested representation.    

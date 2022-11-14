@@ -108,6 +108,7 @@ function handleGetAllShows(Request $request, Response $response, array $args)
     $response_data = array();
     $response_code = HTTP_OK;
     $show_model = new ShowModel();
+    $filter_params = $request->getQueryParams();
 
     $shows = $show_model->getAll();
     // Handle serve-side content negotiation and produce the requested representation.    
