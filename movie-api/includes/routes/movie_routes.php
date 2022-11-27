@@ -106,10 +106,15 @@ function handleDeleteMovie(Request $request, Response $response, array $args)
 //accepts a parameter of name
 function handleGetAllMovies(Request $request, Response $response, array $args)
 {
+    //new
+    $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
+    //new
+    $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
     $movies = array();
     $response_data = array();
     $response_code = HTTP_OK;
     $movie_model = new MovieModel();
+<<<<<<< Updated upstream
     $filter_params = $request->getQueryParams();
     if ($filter_params) {
         // Fetch the list of artists matching the provided name.
@@ -125,6 +130,12 @@ function handleGetAllMovies(Request $request, Response $response, array $args)
         // No filtering by artist name detected.
         $movies = $movie_model->getAll();
     }
+=======
+    //new
+    $movie_model->setPaginationOptions($input_page_number, $input_per_page);
+
+    $movies = $movie_model->getAll();
+>>>>>>> Stashed changes
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
@@ -142,10 +153,16 @@ function handleGetAllMovies(Request $request, Response $response, array $args)
 //handles getting an movie by their id
 function handleGetMovieById(Request $request, Response $response, array $args)
 {
+    //new
+    $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
+    //new
+    $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
     $movies = array();
     $response_data = array();
     $response_code = HTTP_OK;
     $movie_model = new MovieModel();
+
+    $movie_model->setPaginationOptions($input_page_number, $input_per_page);
 
     $movie_id = $args["movie_id"];
     if (isset($movie_id)) {

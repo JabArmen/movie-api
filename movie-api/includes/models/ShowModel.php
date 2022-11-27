@@ -22,7 +22,7 @@ class ShowModel extends BaseModel
     public function getAll()
     {
         $sql = "SELECT * FROM shows";
-        $data = $this->rows($sql);
+        $data = $this->paginate($sql);
         return $data;
     }
 
@@ -34,7 +34,7 @@ class ShowModel extends BaseModel
     public function getWhereLike($showTitle)
     {
         $sql = "SELECT * FROM shows WHERE Title LIKE :title";
-        $data = $this->run($sql, [":title" => $showTitle . "%"])->fetchAll();
+        $data = $this->paginate($sql, [":title" => $showTitle . "%"]);
         return $data;
     }
 
@@ -46,7 +46,7 @@ class ShowModel extends BaseModel
     public function getShowById($show_id)
     {
         $sql = "SELECT * FROM shows WHERE show_id = ?";
-        $data = $this->run($sql, [$show_id])->fetch();
+        $data = $this->paginate($sql, [$show_id]);
         return $data;
     }
 
@@ -58,7 +58,7 @@ class ShowModel extends BaseModel
     public function getShowByDirectorId($director_id)
     {
         $sql = "SELECT * FROM shows WHERE director_id = ?";
-        $data = $this->run($sql, [$director_id])->fetchAll();
+        $data = $this->paginate($sql, [$director_id]);
         return $data;
     }
 
@@ -71,7 +71,7 @@ class ShowModel extends BaseModel
     public function getShowByDirectorAndStudio($director_id, $studio_id)
     {
         $sql = "SELECT * FROM shows WHERE director_id = ? AND studio_id = ?";
-        $data = $this->run($sql, [$director_id, $studio_id])->fetchAll();
+        $data = $this->paginate($sql, [$director_id, $studio_id]);
         return $data;
     }
 

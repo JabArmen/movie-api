@@ -22,7 +22,7 @@ class MovieModel extends BaseModel
     public function getAll()
     {
         $sql = "SELECT * FROM movies";
-        $data = $this->rows($sql);
+        $data = $this->paginate($sql);
         return $data;
     }
 
@@ -33,8 +33,13 @@ class MovieModel extends BaseModel
      */
     public function getWhereLike($movieTitle)
     {
+<<<<<<< Updated upstream
         $sql = "SELECT * FROM movies WHERE title LIKE :title";
         $data = $this->run($sql, [":title" => $movieTitle . "%"])->fetchAll();
+=======
+        $sql = "SELECT * FROM movies WHERE Title LIKE :title";
+        $data = $this->paginate($sql, [":title" => $movieTitle . "%"]);
+>>>>>>> Stashed changes
         return $data;
     }
     /**
@@ -83,7 +88,7 @@ class MovieModel extends BaseModel
     public function getMovieById($movie_id)
     {
         $sql = "SELECT * FROM movies WHERE movie_id = ?";
-        $data = $this->run($sql, [$movie_id])->fetch();
+        $data = $this->paginate($sql, [$movie_id]);
         return $data;
     }
 
@@ -95,7 +100,7 @@ class MovieModel extends BaseModel
     public function getMovieByDirectorId($director_id)
     {
         $sql = "SELECT * FROM movies WHERE director_id = ?";
-        $data = $this->run($sql, [$director_id])->fetchAll();
+        $data = $this->paginate($sql, [$director_id]);
         return $data;
     }
 
@@ -108,7 +113,7 @@ class MovieModel extends BaseModel
     public function getMovieByDirectorAndStudio($director_id, $studio_id)
     {
         $sql = "SELECT * FROM movies WHERE director_id = ? AND studio_id = ?";
-        $data = $this->run($sql, [$director_id, $studio_id])->fetchAll();
+        $data = $this->paginate($sql, [$director_id, $studio_id]);
         return $data;
     }
 

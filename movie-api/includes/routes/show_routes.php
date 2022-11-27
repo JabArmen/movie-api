@@ -104,11 +104,17 @@ function handleDeleteShow(Request $request, Response $response, array $args)
 //accepts a parameter of name
 function handleGetAllShows(Request $request, Response $response, array $args)
 {
+    //new
+    $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
+    //new
+    $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
     $shows = array();
     $response_data = array();
     $response_code = HTTP_OK;
     $show_model = new ShowModel();
     $filter_params = $request->getQueryParams();
+
+    $show_model->setPaginationOptions($input_page_number, $input_per_page);
 
     $shows = $show_model->getAll();
     // Handle serve-side content negotiation and produce the requested representation.    
@@ -128,10 +134,17 @@ function handleGetAllShows(Request $request, Response $response, array $args)
 //handles getting an show by their id
 function handleGetShowById(Request $request, Response $response, array $args)
 {
+    //new
+    $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
+    //new
+    $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
     $shows = array();
     $response_data = array();
     $response_code = HTTP_OK;
     $show_model = new ShowModel();
+
+    $show_model->setPaginationOptions($input_page_number, $input_per_page);
+
 
     $show_id = $args["show_id"];
     if (isset($show_id)) {
