@@ -34,7 +34,19 @@ class CharacterModel extends BaseModel
     public function getWhereLike($characterName)
     {
         $sql = "SELECT * FROM characters WHERE Name LIKE :name";
-        $data = $this->run($sql, [":name" => $characterName . "%"])->fetchAll();
+        $data = $this->paginate($sql, [":name" => $characterName . "%"]);
+        return $data;
+    }
+
+    /**
+     * Retrieve a character by its id.
+     * @param int $character_id the id of the character.
+     * @return array an array containing information about a given character.
+     */
+    public function getCharacterByType($type)
+    {
+        $sql = "SELECT * FROM characters WHERE type = ?";
+        $data = $this->paginate($sql, [$type]);
         return $data;
     }
 
@@ -46,7 +58,7 @@ class CharacterModel extends BaseModel
     public function getCharacterById($character_id)
     {
         $sql = "SELECT * FROM characters WHERE character_id = ?";
-        $data = $this->run($sql, [$character_id])->fetch();
+        $data = $this->paginate($sql, [$character_id]);
         return $data;
     }
 
@@ -58,7 +70,7 @@ class CharacterModel extends BaseModel
     public function getCharacterByActorId($actor_id)
     {
         $sql = "SELECT * FROM characters WHERE actor_id = ?";
-        $data = $this->run($sql, [$actor_id])->fetchAll();
+        $data = $this->paginate($sql, [$actor_id]);
         return $data;
     }
 
@@ -97,7 +109,7 @@ class CharacterModel extends BaseModel
         $data = $this->update($this->table_name, $data, $id);
         return $data;
     }
-    
+
     /**
      * delete an character
      * @param int $character_id

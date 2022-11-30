@@ -33,8 +33,8 @@ class DirectorModel extends BaseModel
      */
     public function getWhereLike($directorName)
     {
-        $sql = "SELECT * FROM directors WHERE Name LIKE :name";
-        $data = $this->run($sql, [":name" => $directorName . "%"])->fetchAll();
+        $sql = "SELECT * FROM directors WHERE Name LIKE ?";
+        $data = $this->run($sql, [$directorName])->fetchAll();
         return $data;
     }
 
@@ -46,10 +46,23 @@ class DirectorModel extends BaseModel
     public function getDirectorById($director_id)
     {
         $sql = "SELECT * FROM directors WHERE director_id = ?";
-        $data = $this->run($sql, [$director_id])->fetch();
+        $data = $this->paginate($sql, [$director_id]);
         return $data;
     }
 
+    public function getDirectorByCountry($country)
+    {
+        $sql = "SELECT * FROM directors WHERE country = ?";
+        $data = $this->run($sql, [$country])->fetch();
+        return $data;
+    }
+
+    public function counter()
+    {
+        $sql = "SELECT count(director_id) FROM directors";
+        $data = $this->rows($sql);
+        return $data;
+    }
     // /**
     //  * Retrieve a movie by its director.
     //  * @param int $director_id the id of the director.
@@ -97,7 +110,7 @@ class DirectorModel extends BaseModel
         $data = $this->update($this->table_name, $data, $id);
         return $data;
     }
-    
+
     /**
      * delete an director
      * @param int $director_id

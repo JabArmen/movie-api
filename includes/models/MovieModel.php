@@ -33,7 +33,7 @@ class MovieModel extends BaseModel
      */
     public function getWhereLike($movieTitle)
     {
-        $sql = "SELECT * FROM movies WHERE Title LIKE :title";
+        $sql = "SELECT * FROM movies WHERE title LIKE :title";
         $data = $this->paginate($sql, [":title" => $movieTitle . "%"]);
         return $data;
     }

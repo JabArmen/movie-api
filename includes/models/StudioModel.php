@@ -26,6 +26,13 @@ class StudioModel extends BaseModel
         return $data;
     }
 
+    public function counter()
+    {
+        $sql = "SELECT count(studio_id) FROM studios";
+        $data = $this->rows($sql);
+        return $data;
+    }
+
     /**
      * Get a list of studioss whose name matches or contains the provided value.       
      * @param string $studioTitle 
@@ -97,7 +104,7 @@ class StudioModel extends BaseModel
         $data = $this->update($this->table_name, $data, $id);
         return $data;
     }
-    
+
     /**
      * delete an studio
      * @param int $studio_id

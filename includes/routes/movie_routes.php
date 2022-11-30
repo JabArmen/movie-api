@@ -110,6 +110,12 @@ function handleGetAllMovies(Request $request, Response $response, array $args)
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
     $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
+    if ($input_page_number == null) {
+        $input_page_number = 1;
+    }
+    if ($input_per_page == null) {
+        $input_per_page = 10;
+    }
     $movies = array();
     $response_data = array();
     $response_code = HTTP_OK;
@@ -117,7 +123,20 @@ function handleGetAllMovies(Request $request, Response $response, array $args)
     //new
     $movie_model->setPaginationOptions($input_page_number, $input_per_page);
 
-    $movies = $movie_model->getAll();
+    $filter_params = $request->getQueryParams();
+    // Fetch the list of artists matching the provided name.
+    if (isset($filter_params['title']))
+        $movies = $movie_model->getWhereLike($filter_params["title"]);
+    else if (isset($filter_params['budget']))
+        $movies = $movie_model->getMovieByBudget($filter_params["budget"]);
+    else if (isset($filter_params['release_date']))
+        $movies = $movie_model->getMovieByReleaseDate($filter_params["release_date"]);
+    else if (isset($filter_params['genre']))
+        $movies = $movie_model->getMovieByGenre($filter_params["genre"]);
+    else
+        // No filtering by artist name detected.
+        $movies = $movie_model->getAll();
+
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
@@ -139,6 +158,12 @@ function handleGetMovieById(Request $request, Response $response, array $args)
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
     $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
+    if ($input_page_number == null) {
+        $input_page_number = 1;
+    }
+    if ($input_per_page == null) {
+        $input_per_page = 10;
+    }
     $movies = array();
     $response_data = array();
     $response_code = HTTP_OK;

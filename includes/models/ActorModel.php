@@ -34,9 +34,10 @@ class ActorModel extends BaseModel
     public function getWhereLike($actorName)
     {
         $sql = "SELECT * FROM actors WHERE Name LIKE :name";
-        $data = $this->run($sql, [":name" => $actorName . "%"])->fetchAll();
+        $data = $this->paginate($sql, [":name" => $actorName . "%"]);
         return $data;
     }
+
 
     /**
      * Retrieve a actor by its id.
@@ -46,7 +47,7 @@ class ActorModel extends BaseModel
     public function getActorById($actor_id)
     {
         $sql = "SELECT * FROM actors WHERE actor_id = ?";
-        $data = $this->run($sql, [$actor_id])->fetch();
+        $data = $this->paginate($sql, [$actor_id]);
         return $data;
     }
 
@@ -58,7 +59,7 @@ class ActorModel extends BaseModel
     // public function getActorByDirectorId($director_id)
     // {
     //     $sql = "SELECT * FROM actors WHERE director_id = ?";
-    //     $data = $this->run($sql, [$director_id])->fetchAll();
+    //     $data = $this->paginate($sql, [$director_id])->fetchAll();
     //     return $data;
     // }
 
@@ -71,7 +72,7 @@ class ActorModel extends BaseModel
     // public function getActorByDirectorAndStudio($director_id, $studio_id)
     // {
     //     $sql = "SELECT * FROM actors WHERE director_id = ? AND studio_id = ?";
-    //     $data = $this->run($sql, [$director_id, $studio_id])->fetchAll();
+    //     $data = $this->paginate($sql, [$director_id, $studio_id])->fetchAll();
     //     return $data;
     // }
 
@@ -97,7 +98,7 @@ class ActorModel extends BaseModel
         $data = $this->update($this->table_name, $data, $id);
         return $data;
     }
-    
+
     /**
      * delete an actor
      * @param int $actor_id
