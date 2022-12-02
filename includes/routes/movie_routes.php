@@ -122,23 +122,35 @@ function handleGetAllMovies(Request $request, Response $response, array $args)
     $movie_model = new MovieModel();
     //new
     $movie_model->setPaginationOptions($input_page_number, $input_per_page);
+    $isFiltered = false;
+
 
     $filter_params = $request->getQueryParams();
     // Fetch the list of artists matching the provided name.
-    if (isset($filter_params['title']))
+    if (isset($filter_params['title'])) {
         $movies = $movie_model->getWhereLike($filter_params["title"]);
-    else if (isset($filter_params['budget']))
+        $isFiltered = true;
+    }
+    if (isset($filter_params['budget'])) {
         $movies = $movie_model->getMovieByBudget($filter_params["budget"]);
-    else if (isset($filter_params['release_date']))
+        $isFiltered = true;
+    }
+    if (isset($filter_params['release_date'])) {
         $movies = $movie_model->getMovieByReleaseDate($filter_params["release_date"]);
-    else if (isset($filter_params['genre']))
+        $isFiltered = true;
+    }
+    if (isset($filter_params['genre'])) {
         $movies = $movie_model->getMovieByGenre($filter_params["genre"]);
-    else
-        // No filtering by artist name detected.
+        $isFiltered = true;
+    }
+    // No filtering by artist name detected.
+    if ($isFiltered == false) {
         $movies = $movie_model->getAll();
-
+    }
+    unset($filter_params);
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
+
     //--
     //-- We verify the requested resource representation.    
     if ($requested_format[0] === APP_MEDIA_TYPE_JSON) {

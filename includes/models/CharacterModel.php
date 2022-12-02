@@ -22,7 +22,7 @@ class CharacterModel extends BaseModel
     public function getAll()
     {
         $sql = "SELECT * FROM characters";
-        $data = $this->rows($sql);
+        $data = $this->paginate($sql);
         return $data;
     }
 
@@ -43,12 +43,14 @@ class CharacterModel extends BaseModel
      * @param int $character_id the id of the character.
      * @return array an array containing information about a given character.
      */
-    public function getCharacterByType($type)
+    public function getCharactersByType($type)
     {
-        $sql = "SELECT * FROM characters WHERE type = ?";
-        $data = $this->paginate($sql, [$type]);
+        $sql = "SELECT * FROM characters WHERE ttype LIKE :ttype";
+        $data = $this->paginate($sql, [":ttype" => $type . "%"]);
         return $data;
     }
+
+
 
     /**
      * Retrieve a character by its id.
@@ -67,12 +69,13 @@ class CharacterModel extends BaseModel
      * @param int $director_id the id of the director.
      * @return array an array containing information about a given character.
      */
-    public function getCharacterByActorId($actor_id)
+    public function getCharactersByActorId($actor_id)
     {
         $sql = "SELECT * FROM characters WHERE actor_id = ?";
         $data = $this->paginate($sql, [$actor_id]);
         return $data;
     }
+
 
     // /**
     //  * Retrieve a character by director and studio.

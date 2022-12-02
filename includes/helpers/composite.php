@@ -18,12 +18,12 @@ $movie_model = new MovieModel();
 if (count($movie_model->getAll()['data']) == 0) {
     $client = new GuzzleHttp\Client();
 
-    $max = 16;
+    $max = 550 + 16;
     $y = 0;
-    for ($i = 1; $i < $max; $i++) {
+    for ($i = 550; $i < $max; $i++) {
         try {
             $y++;
-            $uri_api = "https://api.themoviedb.org/3/movie/" . ($i + 550) . "%7Bmovie_id%7D?api_key=3d95b2e2eb80aade533ec63b88c8f998&language=en-US";
+            $uri_api = "https://api.themoviedb.org/3/movie/" . $i . "%7Bmovie_id%7D?api_key=3d95b2e2eb80aade533ec63b88c8f998&language=en-US";
             $response = $client->get($uri_api);
             $data = $response->getBody()->getContents();
             $movie = json_decode($data, true);

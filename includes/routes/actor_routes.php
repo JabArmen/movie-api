@@ -98,13 +98,40 @@ function handleDeleteActor(Request $request, Response $response, array $args)
 //accepts a parameter of name
 function handleGetAllActors(Request $request, Response $response, array $args)
 {
+    //new
+    $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
+    //new
+    $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
+    if ($input_page_number == null) {
+        $input_page_number = 1;
+    }
+    if ($input_per_page == null) {
+        $input_per_page = 10;
+    }
     $actors = array();
     $response_data = array();
     $response_code = HTTP_OK;
     $actor_model = new ActorModel();
+    $actor_model->setPaginationOptions($input_page_number, $input_per_page);
     $filter_params = $request->getQueryParams();
+    // Fetch the list of artists matching the provided name.
 
-    $actors = $actor_model->getAll();
+    $isFiltered = false;
+    if (isset($filter_params['name'])) {
+        $actors = $actor_model->getWhereLike($filter_params['name']);
+        $isFiltered = true;
+    }
+
+    if (isset($filter_params['studio_id'])) {
+        $actors = $actor_model->getWhereLike($filter_params["studio_id"]);
+        $isFiltered = true;
+    }
+
+    if ($isFiltered == false)
+        // No filtering by artist name detected.
+        $actors = $actor_model->getAll();
+
+    unset($filter_params);
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--

@@ -22,7 +22,7 @@ class ReviewModel extends BaseModel
     public function getAll()
     {
         $sql = "SELECT * FROM reviews";
-        $data = $this->rows($sql);
+        $data = $this->paginate($sql);
         return $data;
     }
 
@@ -34,7 +34,7 @@ class ReviewModel extends BaseModel
     public function getWhereLike($reviewUsername)
     {
         $sql = "SELECT * FROM reviews WHERE Username LIKE :username";
-        $data = $this->run($sql, [":title" => $reviewUsername . "%"])->fetchAll();
+        $data = $this->paginate($sql, [":title" => $reviewUsername . "%"]);
         return $data;
     }
 
@@ -109,7 +109,7 @@ class ReviewModel extends BaseModel
         $data = $this->update($this->table_name, $data, $id);
         return $data;
     }
-    
+
     /**
      * delete an review
      * @param int $review_id

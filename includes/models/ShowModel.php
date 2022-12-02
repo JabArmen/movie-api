@@ -37,6 +37,36 @@ class ShowModel extends BaseModel
         $data = $this->paginate($sql, [":title" => $showTitle . "%"]);
         return $data;
     }
+    public function getShowByGenre($genre)
+    {
+        $sql = "SELECT * FROM Shows WHERE genre LIKE :genre";
+        $data = $this->paginate($sql, [":genre" => $genre . "%"]);
+        return $data;
+    }
+
+    /**
+     * Get a list of Shows whose name matches or contains the provided value.       
+     * @param string $release_date 
+     * @return array An array containing the matches found.
+     */
+    public function getShowByReleaseDate($release_date)
+    {
+        $sql = "SELECT * FROM Shows WHERE release_date LIKE :release_date";
+        $data = $this->paginate($sql, [":release_date" => $release_date . "%"]);
+        return $data;
+    }
+
+    /**
+     * Get a list of Shows whose name matches or contains the provided value.       
+     * @param string $ShowTitle 
+     * @return array An array containing the matches found.
+     */
+    public function getShowByBudget($ShowBudget)
+    {
+        $sql = "SELECT * FROM Shows WHERE budget LIKE :budget";
+        $data = $this->paginate($sql, [":budget" => $ShowBudget . "%"]);
+        return $data;
+    }
 
     /**
      * Retrieve a show by its id.
@@ -97,7 +127,7 @@ class ShowModel extends BaseModel
         $data = $this->update($this->table_name, $data, $id);
         return $data;
     }
-    
+
     /**
      * delete an show
      * @param int $show_id

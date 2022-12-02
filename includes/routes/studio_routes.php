@@ -98,13 +98,34 @@ function handleDeleteStudio(Request $request, Response $response, array $args)
 //accepts a parameter of name
 function handleGetAllStudios(Request $request, Response $response, array $args)
 {
+    //new
+    $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
+    //new
+    $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
+    if ($input_page_number == null) {
+        $input_page_number = 1;
+    }
+    if ($input_per_page == null) {
+        $input_per_page = 10;
+    }
+    $isFiltered = false;
     $studios = array();
     $response_data = array();
     $response_code = HTTP_OK;
     $studio_model = new StudioModel();
     $filter_params = $request->getQueryParams();
-
-    $studios = $studio_model->getAll();
+    $studio_model->setPaginationOptions($input_page_number, $input_per_page);
+    if (isset($filter_params['name'])) {
+        $studios = $studio_model->getWhereLike($filter_params['name']);
+        $isFiltered = true;
+    }
+    if (isset($filter_params['country'])) {
+        $studios = $studio_model->getDirectorByCountry($filter_params['country']);
+        $isFiltered = true;
+    }
+    if ($isFiltered == false)
+        $studios = $studio_model->getAll();
+    unset($filter_params);
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--

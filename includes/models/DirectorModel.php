@@ -22,7 +22,7 @@ class DirectorModel extends BaseModel
     public function getAll()
     {
         $sql = "SELECT * FROM directors";
-        $data = $this->rows($sql);
+        $data = $this->paginate($sql);
         return $data;
     }
 
@@ -33,8 +33,8 @@ class DirectorModel extends BaseModel
      */
     public function getWhereLike($directorName)
     {
-        $sql = "SELECT * FROM directors WHERE Name LIKE ?";
-        $data = $this->run($sql, [$directorName])->fetchAll();
+        $sql = "SELECT * FROM directors WHERE Name LIKE :name";
+        $data = $this->paginate($sql, [":name" => $directorName . "%"]);
         return $data;
     }
 
@@ -53,7 +53,7 @@ class DirectorModel extends BaseModel
     public function getDirectorByCountry($country)
     {
         $sql = "SELECT * FROM directors WHERE country = ?";
-        $data = $this->run($sql, [$country])->fetch();
+        $data = $this->paginate($sql, [$country]);
         return $data;
     }
 

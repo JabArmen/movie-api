@@ -22,7 +22,7 @@ class ActorModel extends BaseModel
     public function getAll()
     {
         $sql = "SELECT * FROM actors";
-        $data = $this->rows($sql);
+        $data = $this->paginate($sql);
         return $data;
     }
 
@@ -51,30 +51,30 @@ class ActorModel extends BaseModel
         return $data;
     }
 
-    // /**
-    //  * Retrieve a actor by its director.
-    //  * @param int $director_id the id of the director.
-    //  * @return array an array containing information about a given actor.
-    //  */
-    // public function getActorByDirectorId($director_id)
-    // {
-    //     $sql = "SELECT * FROM actors WHERE director_id = ?";
-    //     $data = $this->paginate($sql, [$director_id])->fetchAll();
-    //     return $data;
-    // }
+    /**
+     * Retrieve a actor by its director.
+     * @param int $director_id the id of the director.
+     * @return array an array containing information about a given actor.
+     */
+    public function getActorByDirectorId($director_id)
+    {
+        $sql = "SELECT * FROM actors WHERE director_id = ?";
+        $data = $this->paginate($sql, [$director_id]);
+        return $data;
+    }
 
-    // /**
-    //  * Retrieve a actor by director and studio.
-    //  * @param int $director_id the id of the director.
-    //  * @param int $studio_id the id of the studio.
-    //  * @return array an array containing information about a given actor.
-    //  */
-    // public function getActorByDirectorAndStudio($director_id, $studio_id)
-    // {
-    //     $sql = "SELECT * FROM actors WHERE director_id = ? AND studio_id = ?";
-    //     $data = $this->paginate($sql, [$director_id, $studio_id])->fetchAll();
-    //     return $data;
-    // }
+    /**
+     * Retrieve a actor by director and studio.
+     * @param int $director_id the id of the director.
+     * @param int $studio_id the id of the studio.
+     * @return array an array containing information about a given actor.
+     */
+    public function getActorByDirectorAndStudio($director_id, $studio_id)
+    {
+        $sql = "SELECT * FROM actors WHERE director_id = ? AND studio_id = ?";
+        $data = $this->paginate($sql, [$director_id, $studio_id]);
+        return $data;
+    }
 
     /**
      * create a Actor

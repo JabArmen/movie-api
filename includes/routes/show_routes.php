@@ -104,6 +104,7 @@ function handleDeleteShow(Request $request, Response $response, array $args)
 //accepts a parameter of name
 function handleGetAllShows(Request $request, Response $response, array $args)
 {
+
     //new
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
@@ -113,10 +114,33 @@ function handleGetAllShows(Request $request, Response $response, array $args)
     $response_code = HTTP_OK;
     $show_model = new ShowModel();
     $filter_params = $request->getQueryParams();
-
+    $isFiltered = false;
     $show_model->setPaginationOptions($input_page_number, $input_per_page);
 
-    $shows = $show_model->getAll();
+    $filter_params = $request->getQueryParams();
+    // Fetch the list of artists matching the provided name.
+    if (isset($filter_params['title'])) {
+        $shows = $show_model->getWhereLike($filter_params["title"]);
+        $isFiltered = true;
+    }
+    if (isset($filter_params['budget'])) {
+        $shows = $show_model->getShowByBudget($filter_params["budget"]);
+        $isFiltered = true;
+    }
+    if (isset($filter_params['release_date'])) {
+        $shows = $show_model->getShowByReleaseDate($filter_params["release_date"]);
+        $isFiltered = true;
+    }
+    if (isset($filter_params['genre'])) {
+        $shows = $show_model->getShowByGenre($filter_params["genre"]);
+        $isFiltered = true;
+    }
+    // No filtering by artist name detected.
+    if ($isFiltered == false) {
+        $shows = $show_model->getAll();
+    }
+    unset($filter_params);
+    unset($filter_params);
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--

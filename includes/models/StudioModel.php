@@ -22,7 +22,7 @@ class StudioModel extends BaseModel
     public function getAll()
     {
         $sql = "SELECT * FROM studios";
-        $data = $this->rows($sql);
+        $data = $this->paginate($sql);
         return $data;
     }
 
@@ -41,7 +41,7 @@ class StudioModel extends BaseModel
     public function getWhereLike($studioName)
     {
         $sql = "SELECT * FROM studios WHERE Name LIKE :name";
-        $data = $this->run($sql, [":name" => $studioName . "%"])->fetchAll();
+        $data = $this->paginate($sql, [":name" => $studioName . "%"]);
         return $data;
     }
 
@@ -53,10 +53,21 @@ class StudioModel extends BaseModel
     public function getStudioById($studio_id)
     {
         $sql = "SELECT * FROM studios WHERE studio_id = ?";
-        $data = $this->run($sql, [$studio_id])->fetch();
+        $data = $this->paginate($sql, [$studio_id]);
         return $data;
     }
 
+    /**
+     * Retrieve a studio by its country.
+     * @param string $country the name of the studio.
+     * @return array an array containing information about a given studio.
+     */
+    public function getDirectorByCountry($country)
+    {
+        $sql = "SELECT * FROM studios WHERE country = ?";
+        $data = $this->paginate($sql, [$country]);
+        return $data;
+    }
     // /**
     //  * Retrieve a movie by its studio.
     //  * @param int $studio_id the id of the studio.

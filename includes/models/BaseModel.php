@@ -4,7 +4,8 @@
  * A wrapper class for the PDO MySQL API.
  * This class can be extended for further customization.
  */
-class BaseModel {
+class BaseModel
+{
 
     /**
      * holds a database connection.
@@ -21,15 +22,16 @@ class BaseModel {
      * Holds the number of records per page.
      * @var int
      */
-    private $records_per_page = 5;
-    
+    private $records_per_page = 10;
+
     /**
      * Instantiates the BaseModel.
      * @global array $db_options    database connection options.
      * @param array $options        Optional array of PDO options
      * @throws Exception 
      */
-    public function __construct($options=[]) {
+    public function __construct($options = [])
+    {
         // Global array defined in includes/app_constants.php
         global $db_options;
         if (!isset($db_options['database'])) {
@@ -65,7 +67,8 @@ class BaseModel {
      * 
      * @return $db PDO instance
      */
-    protected function getPdo() {
+    protected function getPdo()
+    {
         return $this->db;
     }
 
@@ -77,14 +80,15 @@ class BaseModel {
      * @param int $fetchMode 
      * @return array An array containing the fetched set of records.
      */
-    protected function paginate($sql, $args = [], $fetchMode = PDO::FETCH_ASSOC) {
+    protected function paginate($sql, $args = [], $fetchMode = PDO::FETCH_ASSOC)
+    {
         // 1) Get the number of records that might be returned by the provided query.
         $total_no_of_records = $this->count($sql, $args);
-        
+
         // 2) Configure the paginator.
         $paginator = new Paginator($this->current_page, $this->records_per_page, $total_no_of_records);
         $offset = $paginator->getOffset();
-        
+
         // 3) Add the LIMIT clause to the query.
         $sql .= " LIMIT ${offset}, $this->records_per_page";
         // 4) Get the pagination information.
@@ -101,7 +105,8 @@ class BaseModel {
      * @param  string $sql       sql query
      * @return void
      */
-    protected function raw($sql) {
+    protected function raw($sql)
+    {
         $this->db->query($sql);
     }
 
@@ -112,7 +117,8 @@ class BaseModel {
      * @param  array  $args      params
      * @return object            returns a PDO object
      */
-    protected function run($sql, $args = []) {
+    protected function run($sql, $args = [])
+    {
         if (empty($args)) {
             return $this->db->query($sql);
         }
@@ -131,7 +137,8 @@ class BaseModel {
      * @param  object $fetchMode set return mode ie object or array
      * @return object            returns multiple records
      */
-    protected function rows($sql, $args = [], $fetchMode = PDO::FETCH_ASSOC) {
+    protected function rows($sql, $args = [], $fetchMode = PDO::FETCH_ASSOC)
+    {
         return $this->run($sql, $args)->fetchAll($fetchMode);
     }
 
@@ -143,7 +150,8 @@ class BaseModel {
      * @param  object $fetchMode set return mode ie object or array
      * @return object            returns single record
      */
-    protected function row($sql, $args = [], $fetchMode = PDO::FETCH_ASSOC) {
+    protected function row($sql, $args = [], $fetchMode = PDO::FETCH_ASSOC)
+    {
         return $this->run($sql, $args)->fetch($fetchMode);
     }
 
@@ -155,7 +163,8 @@ class BaseModel {
      * @param  object $fetchMode set return mode ie object or array
      * @return object            returns single record
      */
-    protected function getById($table, $id, $fetchMode = PDO::FETCH_ASSOC) {
+    protected function getById($table, $id, $fetchMode = PDO::FETCH_ASSOC)
+    {
         return $this->run("SELECT * FROM $table WHERE id = ?", [$id])->fetch($fetchMode);
     }
 
@@ -167,14 +176,16 @@ class BaseModel {
      * @param  object $fetchMode set return mode ie object or array
      * @return integer           returns number of records
      */
-    protected function count($sql, $args = []) {
+    protected function count($sql, $args = [])
+    {
         return $this->run($sql, $args)->rowCount();
     }
 
     /**
      * Get primary key of last inserted record
      */
-    protected function lastInsertId() {
+    protected function lastInsertId()
+    {
         return $this->db->lastInsertId();
     }
 
@@ -184,7 +195,8 @@ class BaseModel {
      * @param  string $table table name
      * @param  array $data  array of columns and values
      */
-    protected function insert($table, $data) {
+    protected function insert($table, $data)
+    {
         //add columns into comma seperated string
         $columns = implode(',', array_keys($data));
 
@@ -210,7 +222,8 @@ class BaseModel {
      * @param  array $data  array of columns and values
      * @param  array $where array of columns and values
      */
-    protected function update($table, $data, $where) {
+    protected function update($table, $data, $where)
+    {
         //merge data and where together
         $collection = array_merge($data, $where);
 
@@ -244,7 +257,8 @@ class BaseModel {
      * @param  array $where array of columns and values
      * @param  integer $limit limit number of records
      */
-    protected function delete($table, $where, $limit = 1) {
+    protected function delete($table, $where, $limit = 1)
+    {
         //collect the values from collection
         $values = array_values($where);
 
@@ -271,7 +285,8 @@ class BaseModel {
      * 
      * @param  string $table table name
      */
-    protected function deleteAll($table) {
+    protected function deleteAll($table)
+    {
         $stmt = $this->run("DELETE FROM $table");
 
         return $stmt->rowCount();
@@ -283,7 +298,8 @@ class BaseModel {
      * @param  string $table table name
      * @param  integer $id id of record
      */
-    protected function deleteById($table, $id) {
+    protected function deleteById($table, $id)
+    {
         $stmt = $this->run("DELETE FROM $table WHERE id = ?", [$id]);
 
         return $stmt->rowCount();
@@ -296,7 +312,8 @@ class BaseModel {
      * @param  string $column name of column
      * @param  string $ids ids of records
      */
-    protected function deleteByIds(string $table, string $column, string $ids) {
+    protected function deleteByIds(string $table, string $column, string $ids)
+    {
         $stmt = $this->run("DELETE FROM $table WHERE $column IN ($ids)");
 
         return $stmt->rowCount();
@@ -307,15 +324,16 @@ class BaseModel {
      * 
      * @param  string $table table name
      */
-    protected function truncate($table) {
+    protected function truncate($table)
+    {
         $stmt = $this->run("TRUNCATE TABLE $table");
 
         return $stmt->rowCount();
     }
 
-    public function setPaginationOptions(int $current_page, int $records_per_page): void {
+    public function setPaginationOptions(int $current_page, int $records_per_page): void
+    {
         $this->current_page = $current_page;
         $this->records_per_page = $records_per_page;
     }
-
 }

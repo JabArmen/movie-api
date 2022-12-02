@@ -100,13 +100,41 @@ function handleDeleteCharacter(Request $request, Response $response, array $args
 //accepts a parameter of name
 function handleGetAllCharacters(Request $request, Response $response, array $args)
 {
+    //new
+    $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
+    //new
+    $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
+    if ($input_page_number == null) {
+        $input_page_number = 1;
+    }
+    if ($input_per_page == null) {
+        $input_per_page = 10;
+    }
     $characters = array();
     $response_data = array();
     $response_code = HTTP_OK;
     $character_model = new CharacterModel();
-    $filter_params = $request->getQueryParams();
 
-    $characters = $character_model->getAll();
+    $isFiltered = false;
+    $character_model->setPaginationOptions($input_page_number, $input_per_page);
+    $filter_params = $request->getQueryParams();
+    if (isset($filter_params['actor_id'])) {
+        $characters = $character_model->getCharactersByActorId($filter_params['actor_id']);
+        $isFiltered = true;
+    }
+    if (isset($filter_params['name'])) {
+        $characters = $character_model->getWhereLike($filter_params['name']);
+        $isFiltered = true;
+    }
+    if (isset($filter_params['type'])) {
+        $characters = $character_model->getCharactersByType($filter_params['type']);
+        $isFiltered = true;
+    }
+    if (!$isFiltered) {
+        $characters = $character_model->getAll();
+    }
+
+    unset($filter_params);
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--

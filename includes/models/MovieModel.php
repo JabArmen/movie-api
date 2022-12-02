@@ -45,7 +45,7 @@ class MovieModel extends BaseModel
     public function getMovieByGenre($genre)
     {
         $sql = "SELECT * FROM movies WHERE genre LIKE :genre";
-        $data = $this->run($sql, [":genre" => $genre . "%"])->fetchAll();
+        $data = $this->paginate($sql, [":genre" => $genre . "%"]);
         return $data;
     }
 
@@ -57,7 +57,7 @@ class MovieModel extends BaseModel
     public function getMovieByReleaseDate($release_date)
     {
         $sql = "SELECT * FROM movies WHERE release_date LIKE :release_date";
-        $data = $this->run($sql, [":release_date" => $release_date . "%"])->fetchAll();
+        $data = $this->paginate($sql, [":release_date" => $release_date . "%"]);
         return $data;
     }
 
@@ -69,7 +69,7 @@ class MovieModel extends BaseModel
     public function getMovieByBudget($movieBudget)
     {
         $sql = "SELECT * FROM movies WHERE budget LIKE :budget";
-        $data = $this->run($sql, [":budget" => $movieBudget . "%"])->fetchAll();
+        $data = $this->paginate($sql, [":budget" => $movieBudget . "%"]);
         return $data;
     }
 
@@ -98,7 +98,6 @@ class MovieModel extends BaseModel
         $data = $this->paginate($sql, [$director_id]);
         return $data;
     }
-
     /**
      * Retrieve a movie by director and studio.
      * @param int $director_id the id of the director.
@@ -143,7 +142,7 @@ class MovieModel extends BaseModel
     public function deleteMovie($movie_id)
     {
         $sql = "DELETE FROM movies WHERE movie_id = ?;";
-        $data = $this->run($sql, [$movie_id])->fetchAll();
+        $data = $this->paginate($sql, [$movie_id]);
         return $data;
     }
 }
