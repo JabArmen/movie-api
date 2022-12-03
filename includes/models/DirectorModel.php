@@ -27,6 +27,17 @@ class DirectorModel extends BaseModel
     }
 
     /**
+     * Retrieve all directors from the `directors` table.
+     * @return array A list of directors. 
+     */
+    public function getAllNames()
+    {
+        $sql = "SELECT name FROM directors";
+        $data = $this->paginate($sql);
+        return $data;
+    }
+
+    /**
      * Get a list of directorss whose name matches or contains the provided value.       
      * @param string $directorTitle 
      * @return array An array containing the matches found.
@@ -34,6 +45,13 @@ class DirectorModel extends BaseModel
     public function getWhereLike($directorName)
     {
         $sql = "SELECT * FROM directors WHERE Name LIKE :name";
+        $data = $this->paginate($sql, [":name" => $directorName . "%"]);
+        return $data;
+    }
+
+    public function getWhereLikeName($directorName)
+    {
+        $sql = "SELECT name FROM directors WHERE Name LIKE :name";
         $data = $this->paginate($sql, [":name" => $directorName . "%"]);
         return $data;
     }
@@ -49,10 +67,23 @@ class DirectorModel extends BaseModel
         $data = $this->paginate($sql, [$director_id]);
         return $data;
     }
+    public function getDirectorNameById($director_id)
+    {
+        $sql = "SELECT name FROM directors WHERE director_id = ?";
+        $data = $this->paginate($sql, [$director_id]);
+        return $data;
+    }
 
     public function getDirectorByCountry($country)
     {
         $sql = "SELECT * FROM directors WHERE country = ?";
+        $data = $this->paginate($sql, [$country]);
+        return $data;
+    }
+
+    public function getDirectorByCountryName($country)
+    {
+        $sql = "SELECT name FROM directors WHERE country = ?";
         $data = $this->paginate($sql, [$country]);
         return $data;
     }

@@ -25,6 +25,12 @@ class ShowModel extends BaseModel
         $data = $this->paginate($sql);
         return $data;
     }
+    public function getAllTitles()
+    {
+        $sql = "SELECT title FROM shows";
+        $data = $this->paginate($sql);
+        return $data;
+    }
 
     /**
      * Get a list of showss whose name matches or contains the provided value.       
@@ -37,9 +43,23 @@ class ShowModel extends BaseModel
         $data = $this->paginate($sql, [":title" => $showTitle . "%"]);
         return $data;
     }
+    public function getTitleWhereLike($showTitle)
+    {
+        $sql = "SELECT title FROM shows WHERE Title LIKE :title";
+        $data = $this->paginate($sql, [":title" => $showTitle . "%"]);
+        return $data;
+    }
+
+
     public function getShowByGenre($genre)
     {
         $sql = "SELECT * FROM Shows WHERE genre LIKE :genre";
+        $data = $this->paginate($sql, [":genre" => $genre . "%"]);
+        return $data;
+    }
+    public function getShowTitleByGenre($genre)
+    {
+        $sql = "SELECT title FROM Shows WHERE genre LIKE :genre";
         $data = $this->paginate($sql, [":genre" => $genre . "%"]);
         return $data;
     }
@@ -52,6 +72,12 @@ class ShowModel extends BaseModel
     public function getShowByReleaseDate($release_date)
     {
         $sql = "SELECT * FROM Shows WHERE release_date LIKE :release_date";
+        $data = $this->paginate($sql, [":release_date" => $release_date . "%"]);
+        return $data;
+    }
+    public function getShowTitleByReleaseDate($release_date)
+    {
+        $sql = "SELECT title FROM Shows WHERE release_date LIKE :release_date";
         $data = $this->paginate($sql, [":release_date" => $release_date . "%"]);
         return $data;
     }

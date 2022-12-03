@@ -7,12 +7,14 @@ use Slim\Factory\AppFactory;
 
 require_once __DIR__ . './../models/BaseModel.php';
 require_once __DIR__ . './../models/MovieModel.php';
+require_once __DIR__ . './../models/ShowModel.php';
 require_once __DIR__ . './../models/StudioModel.php';
 require_once __DIR__ . './../models/DirectorModel.php';
 
 use GuzzleHttp\Client;
 
 $movie_model = new MovieModel();
+$show_model = new ShowModel();
 
 
 if (count($movie_model->getAll()['data']) == 0) {
@@ -45,4 +47,36 @@ if (count($movie_model->getAll()['data']) == 0) {
             $max++;
         }
     }
+}
+
+if (count($show_model->getAll()['data']) == 0) {
+    $client = new GuzzleHttp\Client();
+    $uri_api = "https://api.tvmaze.com/shows";
+    $response = $client->get($uri_api);
+    $data = $response->getBody()->getContents();
+    $shows = json_decode($data, true);
+    $y = 1;
+    foreach($shows as $key => $value) {
+        $new_show = array(
+            "show_id" => $value["id"],
+            "title" => $value["name"],
+            "release_date" => $value["premiered"],
+            "end_date" => $value["ended"],
+            "genre" => $value["genres"][0],
+            "network" => $value["network"]["name"],
+            "image" => $value["image"]["original"],
+            "director_id" => $y,
+            "studio_id" => $y
+        );
+
+        if ($y > 15) {
+            break;
+        }
+        $y++;
+        $show_model->createShow($new_show);
+    }
+
+    
+        
+    
 }

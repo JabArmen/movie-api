@@ -7,6 +7,8 @@ use Slim\Factory\AppFactory;
 
 require_once __DIR__ . './../models/BaseModel.php';
 require_once __DIR__ . './../models/DirectorModel.php';
+require_once __DIR__ . './../controllers/wikiApiController.php';
+
 
 // Callback for HTTP GET /directors
 //-- Supported filtering operation: by director name.
@@ -110,6 +112,9 @@ function handleGetAllDirectors(Request $request, Response $response, array $args
     if ($input_per_page == null) {
         $input_per_page = 10;
     }
+    $directors_and_biography = Array();
+    $wiki = new wikiApiController();
+
     $directors = array();
     $response_data = array();
     $response_code = HTTP_OK;
@@ -120,20 +125,36 @@ function handleGetAllDirectors(Request $request, Response $response, array $args
     if (isset($filter_params['name'])) {
         $directors = $director_model->getWhereLike($filter_params['name']);
         $isFiltered = true;
+        $bio = $wiki->getNameDirectorInfo($filter_params['name'], $input_page_number, $input_per_page);
     }
     if (isset($filter_params['country'])) {
         $directors = $director_model->getDirectorByCountry($filter_params['country']);
         $isFiltered = true;
+        $bio = $wiki->getCountryDirectorInfo($filter_params['country'], $input_page_number, $input_per_page);
     }
-    if ($isFiltered == false)
+    if ($isFiltered == false) {
         $directors = $director_model->getAll();
+        $bio = $wiki->getAllDirectorInfo($input_page_number, $input_per_page);
 
+    }
+
+    // $directors_and_biography["biography"] = $bio;
+    $directors_and_biography["directors"] = $directors;
+    $i = 0;
+    foreach ($directors["data"] as $key => $data) {
+        if ($data["name"] == $bio[$i]["name"]) {
+            // var_dump($bio[$i]["name"]);
+            $directors_and_biography["directors"]["data"][$i]["biography"] = $bio[$i]["bio"];
+        }
+        $i++;
+    }
+    
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
     //-- We verify the requested resource representation.    
     if ($requested_format[0] === APP_MEDIA_TYPE_JSON) {
-        $response_data = json_encode($directors, JSON_INVALID_UTF8_SUBSTITUTE);
+        $response_data = json_encode($directors_and_biography, JSON_INVALID_UTF8_SUBSTITUTE);
     } else {
         $response_data = json_encode(getErrorUnsupportedFormat());
         $response_code = HTTP_UNSUPPORTED_MEDIA_TYPE;
@@ -150,10 +171,14 @@ function handleGetDirectorById(Request $request, Response $response, array $args
     $response_code = HTTP_OK;
     $director_model = new DirectorModel();
 
+    $directors_and_biography = Array();
+    $wiki = new wikiApiController();
+
     $director_id = $args["director_id"];
     if (isset($director_id)) {
         // Fetch the info about the specified director.
         $director_info = $director_model->getDirectorById($director_id);
+        $bio = $wiki->getIdDirectorInfo($director_id);
         if (!$director_info) {
             // No matches found?
             $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified director.");
@@ -161,12 +186,22 @@ function handleGetDirectorById(Request $request, Response $response, array $args
             return $response->withStatus(HTTP_NOT_FOUND);
         }
     }
+
+    $directors_and_biography["directors"] = $director_info;
+    $i = 0;
+    foreach ($director_info["data"] as $key => $data) {
+        if ($data["name"] == $bio[$i]["name"]) {
+            // var_dump($bio[$i]["name"]);
+            $directors_and_biography["directors"]["data"][$i]["biography"] = $bio[$i]["bio"];
+        }
+        $i++;
+    }
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
     //-- We verify the requested resource representation.    
     if ($requested_format[0] === APP_MEDIA_TYPE_JSON) {
-        $response_data = json_encode($director_info, JSON_INVALID_UTF8_SUBSTITUTE);
+        $response_data = json_encode($directors_and_biography, JSON_INVALID_UTF8_SUBSTITUTE);
     } else {
         $response_data = json_encode(getErrorUnsupportedFormat());
         $response_code = HTTP_UNSUPPORTED_MEDIA_TYPE;
