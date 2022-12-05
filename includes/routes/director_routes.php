@@ -103,6 +103,7 @@ function handleDeleteDirector(Request $request, Response $response, array $args)
 function handleGetAllDirectors(Request $request, Response $response, array $args)
 {
     //new
+    $table = "directors";
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
     $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
@@ -119,24 +120,36 @@ function handleGetAllDirectors(Request $request, Response $response, array $args
     $response_data = array();
     $response_code = HTTP_OK;
     $director_model = new DirectorModel();
+    $base_model = new BaseModel();
     $director_model->setPaginationOptions($input_page_number, $input_per_page);
     $filter_params = $request->getQueryParams();
     $isFiltered = false;
-    if (isset($filter_params['name'])) {
-        $directors = $director_model->getWhereLike($filter_params['name']);
-        $isFiltered = true;
-        $bio = $wiki->getNameDirectorInfo($filter_params['name'], $input_page_number, $input_per_page);
+    $sql = null;
+    // Fetch the list of artists matching the provided name.
+    try {
+        foreach ($filter_params as $param => $val) {
+            if ($sql != null) {
+                $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
+            } else
+                $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
+            $isFiltered = true;
+        }
+        // No filtering by artist name detected.
+        if (!$isFiltered) {
+            $directors = $director_model->getAll();
+            $bio = $wiki->getAllDirectorInfo($input_page_number, $input_per_page);
+        } else {
+            $directors = $base_model->paginate($sql);
+            $bio = $wiki->getAllDirectorInfoWithData($input_page_number, $input_per_page, $directors);
+        }
+        unset($filter_params);
+    } catch (PDOException $e) {
+        // No matches found?
+        $response_data = makeCustomJSONError("resourceNotFound", "Wrong filters used on this table.");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
     }
-    if (isset($filter_params['country'])) {
-        $directors = $director_model->getDirectorByCountry($filter_params['country']);
-        $isFiltered = true;
-        $bio = $wiki->getCountryDirectorInfo($filter_params['country'], $input_page_number, $input_per_page);
-    }
-    if ($isFiltered == false) {
-        $directors = $director_model->getAll();
-        $bio = $wiki->getAllDirectorInfo($input_page_number, $input_per_page);
-
-    }
+    unset($filter_params);
 
     // $directors_and_biography["biography"] = $bio;
     $directors_and_biography["directors"] = $directors;
@@ -148,7 +161,12 @@ function handleGetAllDirectors(Request $request, Response $response, array $args
         }
         $i++;
     }
-    
+    if ($i == 0) {
+        // No matches found?
+        $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified director.");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
+    }
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
@@ -179,7 +197,7 @@ function handleGetDirectorById(Request $request, Response $response, array $args
         // Fetch the info about the specified director.
         $director_info = $director_model->getDirectorById($director_id);
         $bio = $wiki->getIdDirectorInfo($director_id);
-        if (!$director_info) {
+        if (!$director_info['data']) {
             // No matches found?
             $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified director.");
             $response->getBody()->write($response_data);

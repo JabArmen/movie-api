@@ -45,8 +45,8 @@ class CharacterModel extends BaseModel
      */
     public function getCharactersByType($type)
     {
-        $sql = "SELECT * FROM characters WHERE ttype LIKE :ttype";
-        $data = $this->paginate($sql, [":ttype" => $type . "%"]);
+        $sql = "SELECT * FROM characters WHERE type LIKE :type";
+        $data = $this->paginate($sql, [":type" => $type . "%"]);
         return $data;
     }
 

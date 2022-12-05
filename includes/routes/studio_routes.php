@@ -99,6 +99,7 @@ function handleDeleteStudio(Request $request, Response $response, array $args)
 function handleGetAllStudios(Request $request, Response $response, array $args)
 {
     //new
+    $table = 'studios';
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
     $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
@@ -113,19 +114,39 @@ function handleGetAllStudios(Request $request, Response $response, array $args)
     $response_data = array();
     $response_code = HTTP_OK;
     $studio_model = new StudioModel();
+    $base_model = new BaseModel();
     $filter_params = $request->getQueryParams();
     $studio_model->setPaginationOptions($input_page_number, $input_per_page);
-    if (isset($filter_params['name'])) {
-        $studios = $studio_model->getWhereLike($filter_params['name']);
-        $isFiltered = true;
+    $isFiltered = false;
+    $sql = null;
+    // Fetch the list of artists matching the provided name.
+    try {
+        foreach ($filter_params as $param => $val) {
+            if ($sql != null) {
+                $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
+            } else
+                $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
+            $isFiltered = true;
+        }
+        // No filtering by artist name detected.
+        if (!$isFiltered) {
+            $studios = $studio_model->getAll();
+        } else {
+            $studios = $base_model->paginate($sql);
+        }
+        unset($filter_params);
+    } catch (PDOException $e) {
+        // No matches found?
+        $response_data = makeCustomJSONError("resourceNotFound", "Wrong filters used on this resource");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
     }
-    if (isset($filter_params['country'])) {
-        $studios = $studio_model->getDirectorByCountry($filter_params['country']);
-        $isFiltered = true;
+    if ($studios['data'] == null) {
+        // No matches found?
+        $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified studio.");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
     }
-    if ($isFiltered == false)
-        $studios = $studio_model->getAll();
-    unset($filter_params);
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
@@ -152,7 +173,7 @@ function handleGetStudioById(Request $request, Response $response, array $args)
     if (isset($studio_id)) {
         // Fetch the info about the specified studio.
         $studio_info = $studio_model->getStudioById($studio_id);
-        if (!$studio_info) {
+        if (!$studio_info['data']) {
             // No matches found?
             $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified studio.");
             $response->getBody()->write($response_data);

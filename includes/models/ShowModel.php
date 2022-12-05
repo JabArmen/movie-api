@@ -117,6 +117,17 @@ class ShowModel extends BaseModel
         $data = $this->paginate($sql, [$director_id]);
         return $data;
     }
+    /**
+     * Retrieve a show by its studio.
+     * @param int $studio_id the id of the studio.
+     * @return array an array containing information about a given show.
+     */
+    public function getShowByStudioId($studio_id)
+    {
+        $sql = "SELECT * FROM shows WHERE studio_id = ?";
+        $data = $this->paginate($sql, [$studio_id]);
+        return $data;
+    }
 
     /**
      * Retrieve a show by director and studio.

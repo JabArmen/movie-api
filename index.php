@@ -35,6 +35,9 @@ require_once './includes/routes/studio_routes.php';
 // movie requests
 $app->get("/movies", "handleGetAllMovies");
 $app->get("/movies/{movie_id}", "handleGetMovieById");
+$app->get("/directors/{director_id}/movies", "handleGetMovieByRequestId");
+$app->get("/studios/{studio_id}/movies", "handleGetMovieByRequestId");
+
 
 $app->delete("/movies/{movie_id}","handleDeleteMovie");
 
@@ -85,6 +88,8 @@ $app->put("/reviews", "handleUpdateReview");
 //show requests
 $app->get("/shows", "handleGetAllShows");
 $app->get("/shows/{show_id}", "handleGetShowById");
+$app->get("/directors/{director_id}/shows","handleGetShowByRequestId");
+$app->get("/studios/{studio_id}/shows","handleGetShowByRequestId");
 
 $app->delete("/shows/{show_id}","handleDeleteShow");
 

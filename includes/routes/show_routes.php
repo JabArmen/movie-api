@@ -106,8 +106,8 @@ function handleDeleteShow(Request $request, Response $response, array $args)
 //accepts a parameter of name
 function handleGetAllShows(Request $request, Response $response, array $args)
 {
-
     //new
+    $table = "shows";
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
     $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
@@ -117,7 +117,7 @@ function handleGetAllShows(Request $request, Response $response, array $args)
     if ($input_per_page == null) {
         $input_per_page = 10;
     }
-    $shows_and_summary = Array();
+    $shows_and_summary = array();
     $showComposite = new showController();
     $shows = array();
     $response_data = array();
@@ -126,34 +126,34 @@ function handleGetAllShows(Request $request, Response $response, array $args)
     $filter_params = $request->getQueryParams();
     $isFiltered = false;
     $show_model->setPaginationOptions($input_page_number, $input_per_page);
+    $base_model = new BaseModel();
 
     $filter_params = $request->getQueryParams();
+    $sql = null;
     // Fetch the list of artists matching the provided name.
-    if (isset($filter_params['title'])) {
-        $shows = $show_model->getWhereLike($filter_params["title"]);
-        $isFiltered = true;
-        $summary = $showComposite->getTitleShowInfo($filter_params["title"], $input_page_number, $input_per_page);
+    try {
+        foreach ($filter_params as $param => $val) {
+            if ($sql != null) {
+                $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
+            } else
+                $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
+            $isFiltered = true;
+        }
+        // No filtering by artist name detected.
+        if (!$isFiltered) {
+            $shows = $show_model->getAll();
+            $summary = $showComposite->getAllShowInfo($input_page_number, $input_per_page);
+        } else {
+            $shows = $base_model->paginate($sql);
+            $summary = $showComposite->getAllShowInfoWithData($input_page_number, $input_per_page, $shows);
+        }
+        unset($filter_params);
+    } catch (PDOException $e) {
+        // No matches found?
+        $response_data = makeCustomJSONError("resourceNotFound", "Wrong filters used on this table.");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
     }
-    if (isset($filter_params['budget'])) {
-        $shows = $show_model->getShowByBudget($filter_params["budget"]);
-        $isFiltered = true;
-    }
-    if (isset($filter_params['release_date'])) {
-        $shows = $show_model->getShowByReleaseDate($filter_params["release_date"]);
-        $isFiltered = true;
-        $summary = $showComposite->getReleaseShowInfo($filter_params["release_date"], $input_page_number, $input_per_page);
-    }
-    if (isset($filter_params['genre'])) {
-        $shows = $show_model->getShowByGenre($filter_params["genre"]);
-        $isFiltered = true;
-        $summary = $showComposite->getGenreShowInfo($filter_params["genre"], $input_page_number, $input_per_page);
-    }
-    // No filtering by artist name detected.
-    if ($isFiltered == false) {
-        $shows = $show_model->getAll();
-        $summary = $showComposite->getAllShowInfo($input_page_number, $input_per_page);
-    }
-    unset($filter_params);
     unset($filter_params);
 
     $shows_and_summary["shows"] = $shows;
@@ -164,11 +164,17 @@ function handleGetAllShows(Request $request, Response $response, array $args)
             $shows_and_summary["shows"]["data"][$i]["summary"] = $summary[$i]["sum"];
         }
         $i++;
-    } 
+    }
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
     //-- We verify the requested resource representation.    
+    if ($i == 0) {
+        // No matches found?
+        $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified show.");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
+    }
     if ($requested_format[0] === APP_MEDIA_TYPE_JSON) {
         $response_data = json_encode($shows_and_summary, JSON_INVALID_UTF8_SUBSTITUTE);
     } else {
@@ -182,10 +188,15 @@ function handleGetAllShows(Request $request, Response $response, array $args)
 //handles getting an show by their id
 function handleGetShowById(Request $request, Response $response, array $args)
 {
-    //new
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
     $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
+    if ($input_page_number == null) {
+        $input_page_number = 1;
+    }
+    if ($input_per_page == null) {
+        $input_per_page = 10;
+    }
     $shows = array();
     $response_data = array();
     $response_code = HTTP_OK;
@@ -198,7 +209,7 @@ function handleGetShowById(Request $request, Response $response, array $args)
     if (isset($show_id)) {
         // Fetch the info about the specified show.
         $show_info = $show_model->getShowById($show_id);
-        if (!$show_info) {
+        if (!$show_info['data']) {
             // No matches found?
             $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified show.");
             $response->getBody()->write($response_data);
@@ -211,6 +222,57 @@ function handleGetShowById(Request $request, Response $response, array $args)
     //-- We verify the requested resource representation.    
     if ($requested_format[0] === APP_MEDIA_TYPE_JSON) {
         $response_data = json_encode($show_info, JSON_INVALID_UTF8_SUBSTITUTE);
+    } else {
+        $response_data = json_encode(getErrorUnsupportedFormat());
+        $response_code = HTTP_UNSUPPORTED_MEDIA_TYPE;
+    }
+    $response->getBody()->write($response_data);
+    return $response->withStatus($response_code);
+}
+
+//handles getting a show by their directorid or studio
+function handleGetShowByRequestId(Request $request, Response $response, array $args)
+{
+    //new
+    $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
+    //new
+    $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
+    if ($input_page_number == null) {
+        $input_page_number = 1;
+    }
+    if ($input_per_page == null) {
+        $input_per_page = 10;
+    }
+    $movies = array();
+    $response_data = array();
+    $response_code = HTTP_OK;
+    $show_model = new ShowModel();
+    $is_director = false;
+    $show_model->setPaginationOptions($input_page_number, $input_per_page);
+    if (isset($args["director_id"])) {
+        $request_id = $args["director_id"];
+        $is_director = true;
+    } else
+        $request_id = $args["studio_id"];
+    if (isset($request_id)) {
+        // Fetch the info about the specified movie.
+        if ($is_director)
+            $movie_info = $show_model->getShowByDirectorId($request_id);
+        else
+            $movie_info = $show_model->getShowByStudioId($request_id);
+        if ($movie_info['data'] == null) {
+            // No matches found?
+            $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified movie.");
+            $response->getBody()->write($response_data);
+            return $response->withStatus(HTTP_NOT_FOUND);
+        }
+    }
+    // Handle serve-side content negotiation and produce the requested representation.    
+    $requested_format = $request->getHeader('Accept');
+    //--
+    //-- We verify the requested resource representation.    
+    if ($requested_format[0] === APP_MEDIA_TYPE_JSON) {
+        $response_data = json_encode($movie_info, JSON_INVALID_UTF8_SUBSTITUTE);
     } else {
         $response_data = json_encode(getErrorUnsupportedFormat());
         $response_code = HTTP_UNSUPPORTED_MEDIA_TYPE;

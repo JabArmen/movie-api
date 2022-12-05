@@ -98,6 +98,7 @@ function handleDeleteActor(Request $request, Response $response, array $args)
 //accepts a parameter of name
 function handleGetAllActors(Request $request, Response $response, array $args)
 {
+    $table = 'actors';
     //new
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
@@ -112,26 +113,41 @@ function handleGetAllActors(Request $request, Response $response, array $args)
     $response_data = array();
     $response_code = HTTP_OK;
     $actor_model = new ActorModel();
+    $base_model = new BaseModel();
     $actor_model->setPaginationOptions($input_page_number, $input_per_page);
     $filter_params = $request->getQueryParams();
     // Fetch the list of artists matching the provided name.
 
     $isFiltered = false;
-    if (isset($filter_params['name'])) {
-        $actors = $actor_model->getWhereLike($filter_params['name']);
-        $isFiltered = true;
-    }
-
-    if (isset($filter_params['studio_id'])) {
-        $actors = $actor_model->getWhereLike($filter_params["studio_id"]);
-        $isFiltered = true;
-    }
-
-    if ($isFiltered == false)
+    $sql = null;
+    // Fetch the list of artists matching the provided name.
+    try {
+        foreach ($filter_params as $param => $val) {
+            if ($sql != null) {
+                $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
+            } else
+                $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
+            $isFiltered = true;
+        }
         // No filtering by artist name detected.
-        $actors = $actor_model->getAll();
-
-    unset($filter_params);
+        if (!$isFiltered) {
+            $actors = $actor_model->getAll();
+        } else {
+            $actors = $base_model->paginate($sql);
+        }
+        unset($filter_params);
+    } catch (PDOException $e) {
+        // No matches found?
+        $response_data = makeCustomJSONError("resourceNotFound", "Wrong filters used on this resource");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
+    }
+    if ($actors['data'] == null) {
+        // No matches found?
+        $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified actor.");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
+    }
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
@@ -158,7 +174,7 @@ function handleGetActorById(Request $request, Response $response, array $args)
     if (isset($actor_id)) {
         // Fetch the info about the specified actor.
         $actor_info = $actor_model->getActorById($actor_id);
-        if (!$actor_info) {
+        if (!$actor_info['data']) {
             // No matches found?
             $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified actor.");
             $response->getBody()->write($response_data);

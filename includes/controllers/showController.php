@@ -47,6 +47,37 @@ class showController extends WebServiceInvoker {
         return $summary;
     }
 
+    /**
+     * Fetches and parses a list of director biography from wikipedia api.
+     * 
+     * @return array containing some information about biography. 
+     */
+    function getAllShowInfoWithData($input_page_number, $input_per_page,$data) {
+        $summary = Array();
+        $show_model = new ShowModel();
+        $show_model->setPaginationOptions($input_page_number, $input_per_page);
+        $titles = $data;
+        $i = 0;
+        foreach($titles["data"] as $value) {
+            $title = $value["title"]; 
+            $resource_uri = "https://api.tvmaze.com/singlesearch/shows?q=${title}";
+            $showData = $this->invoke($resource_uri);
+
+            if (!empty($showData)) {
+                // Parse the fetched list of books.   
+                $showData = json_decode($showData, true);
+
+                // Parse the list of books and retreive some  
+                // of the contained information.
+                $summary[$i]["title"] = $title;
+                $summary[$i]["sum"] = $showData["summary"];
+            }
+
+            $i++;
+        }
+        return $summary;
+    }
+
     function getTitleShowInfo($showTitle, $input_page_number, $input_per_page) {
         $summary = Array();
         $show_model = new ShowModel();

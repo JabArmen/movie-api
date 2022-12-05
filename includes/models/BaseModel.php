@@ -80,7 +80,7 @@ class BaseModel
      * @param int $fetchMode 
      * @return array An array containing the fetched set of records.
      */
-    protected function paginate($sql, $args = [], $fetchMode = PDO::FETCH_ASSOC)
+    public function paginate($sql, $args = [], $fetchMode = PDO::FETCH_ASSOC)
     {
         // 1) Get the number of records that might be returned by the provided query.
         $total_no_of_records = $this->count($sql, $args);
