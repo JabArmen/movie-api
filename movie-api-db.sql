@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 05, 2022 at 02:37 AM
+-- Generation Time: Dec 08, 2022 at 05:34 AM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 8.1.1
 
@@ -357,13 +357,14 @@ ALTER TABLE `studios`
 -- Constraints for table `characters`
 --
 ALTER TABLE `characters`
-  ADD CONSTRAINT `FK_characteractorID` FOREIGN KEY (`actor_id`) REFERENCES `actors` (`actor_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `FK_characteractorID` FOREIGN KEY (`actor_id`) REFERENCES `actors` (`actor_id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `shows`
 --
 ALTER TABLE `shows`
-  ADD CONSTRAINT `FK_showstudioID` FOREIGN KEY (`studio_id`) REFERENCES `studios` (`studio_id`);
+  ADD CONSTRAINT `FK_movieDirectorID` FOREIGN KEY (`director_id`) REFERENCES `directors` (`director_id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  ADD CONSTRAINT `FK_movieStudioID` FOREIGN KEY (`studio_id`) REFERENCES `studios` (`studio_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
