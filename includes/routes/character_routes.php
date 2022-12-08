@@ -106,6 +106,7 @@ function handleDeleteCharacter(Request $request, Response $response, array $args
 function handleGetAllCharacters(Request $request, Response $response, array $args)
 {
     $table = 'characters';
+    $table = 'characters';
     //new
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
