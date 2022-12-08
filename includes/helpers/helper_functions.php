@@ -16,3 +16,11 @@ function makeCustomJSONError($error_code, $error_message) {
     );    
     return json_encode($error_data);
 }
+
+function makeCustomJSONSuccess($error_code, $error_message) {
+    $error_data = array(
+        "success:" => $error_code,
+        "message:" => $error_message
+    );    
+    return json_encode($error_data);
+}

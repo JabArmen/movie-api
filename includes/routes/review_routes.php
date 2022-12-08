@@ -81,17 +81,22 @@ function handleUpdateReview(Request $request, Response $response, array $args)
 function handleDeleteReview(Request $request, Response $response, array $args)
 {
     $response_data = array();
-    $response_code = HTTP_OK;
+    $response_code = 202;
     $review_model = new ReviewModel();
     $review_id = $args['review_id'];
 
+    if(!$review_model->getReviewById($args['review_id'])['data']){
+        $response_data = makeCustomJSONError("resourceNotFound", "Wrong ID used");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
+    }
     $review_model->deleteReview($review_id);
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
     //-- We verify the requested resource representation.    
     if ($requested_format[0] === APP_MEDIA_TYPE_JSON) {
-        $response_data = json_encode($review_model->getAll(), JSON_INVALID_UTF8_SUBSTITUTE);
+        $response_data = makeCustomJSONSuccess("202", "Successfully deleted resource");
     } else {
         $response_data = json_encode(getErrorUnsupportedFormat());
         $response_code = HTTP_UNSUPPORTED_MEDIA_TYPE;
@@ -104,6 +109,7 @@ function handleDeleteReview(Request $request, Response $response, array $args)
 function handleGetAllReviews(Request $request, Response $response, array $args)
 {
     //new
+    $table = 'reviews';
     $input_page_number = filter_input(INPUT_GET, "page", FILTER_VALIDATE_INT);
     //new
     $input_per_page = filter_input(INPUT_GET, "per_page", FILTER_VALIDATE_INT);
@@ -117,12 +123,43 @@ function handleGetAllReviews(Request $request, Response $response, array $args)
     $response_data = array();
     $response_code = HTTP_OK;
     $review_model = new ReviewModel();
+    $base_model = new BaseModel();
 
     $review_model->setPaginationOptions($input_page_number, $input_per_page);
     $filter_params = $request->getQueryParams();
+    $isFiltered = false;
+    $sql = null;
+    // Fetch the list of artists matching the provided name.
 
-    $reviews = $review_model->getAll();
+    try {
+        foreach ($filter_params as $param => $val) {
+            if ($param == "page" || $param == "per_page")
+                break;
+            if ($sql != null) {
+                $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
+            } else
+                $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
+            $isFiltered = true;
+        }
+        // No filtering by artist name detected.
+        if (!$isFiltered) {
+            $reviews = $review_model->getAll();
+        } else {
+            $reviews = $base_model->paginate($sql);
+        }
+    } catch (PDOException $e) {
+        // No matches found?
+        $response_data = makeCustomJSONError("resourceNotFound", "Wrong filters used on this table");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
+    }
+
     unset($filter_params);
+    if (!$reviews['data']){
+        $response_data = makeCustomJSONError("resourceNotFound", "No reviews in databse");
+        $response->getBody()->write($response_data);
+        return $response->withStatus(HTTP_NOT_FOUND);
+    }
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
     //--
@@ -149,7 +186,7 @@ function handleGetReviewById(Request $request, Response $response, array $args)
     if (isset($review_id)) {
         // Fetch the info about the specified review.
         $review_info = $review_model->getReviewById($review_id);
-        if (!$review_info) {
+        if (!$review_info['data']) {
             // No matches found?
             $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified review.");
             $response->getBody()->write($response_data);

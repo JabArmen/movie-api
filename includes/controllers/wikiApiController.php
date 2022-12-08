@@ -58,6 +58,43 @@ class wikiApiController extends WebServiceInvoker {
      * 
      * @return array containing some information about biography. 
      */
+    function getAllDirectorInfoWithData($input_page_number, $input_per_page,$data) {
+        $biography = Array();
+        $director = new DirectorModel();
+        $director->setPaginationOptions($input_page_number, $input_per_page);
+        $names = $data;
+        $i = 0;
+        foreach($names["data"] as $value) {
+            $name = $value["name"]; 
+            $resource_uri = "https://en.wikipedia.org/w/api.php?action=query&format=json&titles=${name}&prop=extracts&exintro=True&explaintext=True";
+            $directorData = $this->invoke($resource_uri);
+
+            if (!empty($directorData)) {
+                // Parse the fetched list of books.   
+                $directorData = json_decode($directorData, true);
+                //var_dump($directorData);exit;
+
+                // Parse the list of books and retreive some  
+                // of the contained information.
+                // foreach ($directorData as $key => $director) {
+                $page = array_values($directorData['query']['pages']);
+                    
+                $biography[$i]["name"] = $name;
+                $biography[$i]["bio"] = $page[0]["extract"];
+                    #$biography["bio"] = $directorData["query"]["pages"][""];
+                // }
+            }
+
+            $i++;
+        }
+        return $biography;
+    }
+
+    /**
+     * Fetches and parses a list of director biography from wikipedia api.
+     * 
+     * @return array containing some information about biography. 
+     */
     function getCountryDirectorInfo($country, $input_page_number, $input_per_page) {
         $biography = Array();
         $director = new DirectorModel();

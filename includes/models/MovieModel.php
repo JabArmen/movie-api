@@ -99,6 +99,17 @@ class MovieModel extends BaseModel
         return $data;
     }
     /**
+     * Retrieve a movie by its studio.
+     * @param int $studio_id the id of the studio.
+     * @return array an array containing information about a given movie.
+     */
+    public function getMovieByStudioId($studio_id)
+    {
+        $sql = "SELECT * FROM movies WHERE studio_id = ?";
+        $data = $this->paginate($sql, [$studio_id]);
+        return $data;
+    }
+    /**
      * Retrieve a movie by director and studio.
      * @param int $director_id the id of the director.
      * @param int $studio_id the id of the studio.
@@ -142,7 +153,7 @@ class MovieModel extends BaseModel
     public function deleteMovie($movie_id)
     {
         $sql = "DELETE FROM movies WHERE movie_id = ?;";
-        $data = $this->paginate($sql, [$movie_id]);
+        $data = $this->run($sql, [$movie_id]);
         return $data;
     }
 }
