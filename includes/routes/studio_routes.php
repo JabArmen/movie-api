@@ -31,11 +31,19 @@ function handleCreateStudio(Request $request, Response $response, array $args)
             'address' => $data_single['address'],
             'country' => $data_single['country'],
         );
-        $studio_model->createStudio($new_studio_record);
+        try{
+            $studio_model->createStudio($new_studio_record);
+        }
+        catch (Exception $e){
+            $response_data = makeCustomJSONSuccess("500", "This resource already exists (may be a primary key)");
+            $response->getBody()->write($response_data);
+            return $response;
+        }
+
     }
 
-    $html = var_export($data_string, true);
-    $response->getBody()->write($html);
+    $response_data = makeCustomJSONSuccess("201", "Succesfully created resource");
+    $response->getBody()->write($response_data);
     return $response;
 }
 
@@ -67,8 +75,8 @@ function handleUpdateStudio(Request $request, Response $response, array $args)
         $data_string .= "Succesful Put Request:  " . $data_single["studio_id"] . " -> " . $data_single["name"] . "\n";
         $studio_model->updateStudio($updated_studio_data, $updated_studio_id);
     }
-    $html = var_export($data_string, true);
-    $response->getBody()->write($html);
+    $response_data = makeCustomJSONSuccess("202", $data_string);
+    $response->getBody()->write($response_data);
     return $response->withStatus($response_code);
 }
 
@@ -127,13 +135,14 @@ function handleGetAllStudios(Request $request, Response $response, array $args)
     // Fetch the list of artists matching the provided name.
     try {
         foreach ($filter_params as $param => $val) {
-            if ($param == "page" || $param == "per_page")
-                break;
-            if ($sql != null) {
-                $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
-            } else
-                $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
-            $isFiltered = true;
+            if ($param == "page" || $param == "per_page") {
+            } else {
+                if ($sql != null) {
+                    $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
+                } else
+                    $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
+                $isFiltered = true;
+            }
         }
         // No filtering by artist name detected.
         if (!$isFiltered) {

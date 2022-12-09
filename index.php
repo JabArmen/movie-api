@@ -32,7 +32,7 @@ require_once './includes/routes/show_routes.php';
 require_once './includes/routes/studio_routes.php';
 
 //-- Step 6)
-// movie requests
+// movie 
 $app->get("/movies", "handleGetAllMovies");
 $app->get("/movies/{movie_id}", "handleGetMovieById");
 $app->get("/directors/{director_id}/movies", "handleGetMovieByRequestId");

@@ -31,11 +31,17 @@ function handleCreateActor(Request $request, Response $response, array $args)
             'biography' => $data_single['biography'],
             'country' => $data_single['country']
         );
-        $actor_model->createActor($new_actor_record);
+        try {
+            $actor_model->createActor($new_actor_record);
+        } catch (Exception $e) {
+            $response_data = makeCustomJSONSuccess("500", "This resource already exists (may be a primary key)");
+            $response->getBody()->write($response_data);
+            return $response;
+        }
     }
 
-    $html = var_export($data_string, true);
-    $response->getBody()->write($html);
+    $response_data = makeCustomJSONSuccess("201", "Succesfully created resource");
+    $response->getBody()->write($response_data);
     return $response;
 }
 
@@ -67,8 +73,8 @@ function handleUpdateActor(Request $request, Response $response, array $args)
         $data_string .= "Succesful Put Request:  " . $data_single["actor_id"] . " -> " . $data_single["name"] . "\n";
         $actor_model->updateActor($updated_actor_data, $updated_actor_id);
     }
-    $html = var_export($data_string, true);
-    $response->getBody()->write($html);
+    $response_data = makeCustomJSONSuccess("202", $data_string);
+    $response->getBody()->write($response_data);
     return $response->withStatus($response_code);
 }
 
@@ -80,7 +86,7 @@ function handleDeleteActor(Request $request, Response $response, array $args)
     $actor_model = new ActorModel();
     $actor_id = $args['actor_id'];
 
-    if(!$actor_model->getActorById($args['actor_id'])['data']){
+    if (!$actor_model->getActorById($args['actor_id'])['data']) {
         $response_data = makeCustomJSONError("resourceNotFound", "Wrong ID used");
         $response->getBody()->write($response_data);
         return $response->withStatus(HTTP_NOT_FOUND);
@@ -128,13 +134,14 @@ function handleGetAllActors(Request $request, Response $response, array $args)
     // Fetch the list of artists matching the provided name.
     try {
         foreach ($filter_params as $param => $val) {
-            if ($param == "page" || $param == "per_page")
-                break;
-            if ($sql != null) {
-                $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
-            } else
-                $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
-            $isFiltered = true;
+            if ($param == "page" || $param == "per_page") {
+            } else {
+                if ($sql != null) {
+                    $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
+                } else
+                    $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
+                $isFiltered = true;
+            }
         }
         // No filtering by artist name detected.
         if (!$isFiltered) {
@@ -198,6 +205,16 @@ function handleGetActorById(Request $request, Response $response, array $args)
         $response_data = json_encode(getErrorUnsupportedFormat());
         $response_code = HTTP_UNSUPPORTED_MEDIA_TYPE;
     }
+    $response->getBody()->write($response_data);
+    return $response->withStatus($response_code);
+}
+
+function handleBase(Request $request, Response $response, array $args)
+{
+
+    $response_code = HTTP_OK;
+    $response_data = makeCustomJSONSuccess("500", "This resource already exists (may be a primary key)");
+
     $response->getBody()->write($response_data);
     return $response->withStatus($response_code);
 }

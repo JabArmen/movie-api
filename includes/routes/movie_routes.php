@@ -34,11 +34,18 @@ function handleCreateMovie(Request $request, Response $response, array $args)
             'director_id' => $data_single['director_id'],
             'studio_id' => $data_single['studio_id']
         );
-        $movie_model->createMovie($new_movie_record);
+        try{
+            $movie_model->createMovie($new_movie_record);
+        }
+        catch (Exception $e){
+            $response_data = makeCustomJSONSuccess("500", "This resource already exists (may be a primary key)");
+            $response->getBody()->write($response_data);
+            return $response;
+        }
     }
 
-    $html = var_export($data_string, true);
-    $response->getBody()->write($html);
+    $response_data = makeCustomJSONSuccess("201", "Succesfully created resource");
+    $response->getBody()->write($response_data);
     return $response;
 }
 
@@ -74,8 +81,8 @@ function handleUpdateMovie(Request $request, Response $response, array $args)
         $data_string .= "Succesful Put Request:  " . $data_single["movie_id"] . " -> " . $data_single["title"] . "\n";
         $movie_model->updateMovie($updated_movie_data, $updated_movie_id);
     }
-    $html = var_export($data_string, true);
-    $response->getBody()->write($html);
+    $response_data = makeCustomJSONSuccess("202", $data_string);
+    $response->getBody()->write($response_data);
     return $response->withStatus($response_code);
 }
 
@@ -87,7 +94,7 @@ function handleDeleteMovie(Request $request, Response $response, array $args)
     $movie_model = new MovieModel();
     $movie_id = $args['movie_id'];
 
-    if(!$movie_model->getMovieById($args['movie_id'])['data']){
+    if (!$movie_model->getMovieById($args['movie_id'])['data']) {
         $response_data = makeCustomJSONError("resourceNotFound", "Wrong ID used");
         $response->getBody()->write($response_data);
         return $response->withStatus(HTTP_NOT_FOUND);
@@ -135,13 +142,14 @@ function handleGetAllMovies(Request $request, Response $response, array $args)
     // Fetch the list of artists matching the provided name.
     try {
         foreach ($filter_params as $param => $val) {
-            if ($param == "page" || $param == "per_page")
-                break;
-            if ($sql != null) {
-                $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
-            } else
-                $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
-            $isFiltered = true;
+            if ($param == "page" || $param == "per_page") {
+            } else {
+                if ($sql != null) {
+                    $sql .= ' AND ' . $param . ' LIKE "' . $val . '"';
+                } else
+                    $sql = 'SELECT * FROM ' . $table . ' WHERE ' . $param . ' LIKE "' . $val . '"';
+                $isFiltered = true;
+            }
         }
         // No filtering by artist name detected.
         if (!$isFiltered) {
@@ -159,7 +167,7 @@ function handleGetAllMovies(Request $request, Response $response, array $args)
     // Handle serve-side content negotiation and produce the requested representation.    
     $requested_format = $request->getHeader('Accept');
 
-    if ($movies['data'] == null){
+    if ($movies['data'] == null) {
         // No matches found?
         $response_data = makeCustomJSONError("resourceNotFound", "No matching record was found for the specified movie.");
         $response->getBody()->write($response_data);
