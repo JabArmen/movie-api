@@ -170,8 +170,6 @@ function handleGetAllDirectors(Request $request, Response $response, array $args
     $directors_and_biography["directors"] = $directors;
     $i = 0;
     foreach ($directors["data"] as $key => $data) {
-        if ($param == "page" || $param == "per_page")
-                break;
         if ($data["name"] == $bio[$i]["name"]) {
             // var_dump($bio[$i]["name"]);
             $directors_and_biography["directors"]["data"][$i]["biography"] = $bio[$i]["bio"];
