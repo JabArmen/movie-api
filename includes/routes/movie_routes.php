@@ -34,10 +34,9 @@ function handleCreateMovie(Request $request, Response $response, array $args)
             'director_id' => $data_single['director_id'],
             'studio_id' => $data_single['studio_id']
         );
-        try{
+        try {
             $movie_model->createMovie($new_movie_record);
-        }
-        catch (Exception $e){
+        } catch (Exception $e) {
             $response_data = makeCustomJSONSuccess("500", "This resource already exists (may be a primary key)");
             $response->getBody()->write($response_data);
             return $response;

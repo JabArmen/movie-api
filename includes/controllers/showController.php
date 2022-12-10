@@ -6,13 +6,15 @@ require_once __DIR__ . './../helpers/WebServiceInvoker.php';
  *
  * @author Sleiman Rabah
  */
-class showController extends WebServiceInvoker {
+class showController extends WebServiceInvoker
+{
 
-    private $request_options = Array(
-        'headers' => Array('Accept' => 'application/json')
+    private $request_options = array(
+        'headers' => array('Accept' => 'application/json')
     );
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct($this->request_options);
     }
 
@@ -21,14 +23,15 @@ class showController extends WebServiceInvoker {
      * 
      * @return array containing some information about biography. 
      */
-    function getAllShowInfo($input_page_number, $input_per_page) {
-        $summary = Array();
+    function getAllShowInfo($input_page_number, $input_per_page)
+    {
+        $summary = array();
         $show_model = new ShowModel();
         $show_model->setPaginationOptions($input_page_number, $input_per_page);
         $titles = $show_model->getAllTitles();
         $i = 0;
-        foreach($titles["data"] as $value) {
-            $title = $value["title"]; 
+        foreach ($titles["data"] as $value) {
+            $title = $value["title"];
             $resource_uri = "https://api.tvmaze.com/singlesearch/shows?q=${title}";
             $showData = $this->invoke($resource_uri);
 
@@ -52,14 +55,15 @@ class showController extends WebServiceInvoker {
      * 
      * @return array containing some information about biography. 
      */
-    function getAllShowInfoWithData($input_page_number, $input_per_page,$data) {
-        $summary = Array();
+    function getAllShowInfoWithData($input_page_number, $input_per_page, $data)
+    {
+        $summary = array();
         $show_model = new ShowModel();
         $show_model->setPaginationOptions($input_page_number, $input_per_page);
         $titles = $data;
         $i = 0;
-        foreach($titles["data"] as $value) {
-            $title = $value["title"]; 
+        foreach ($titles["data"] as $value) {
+            $title = $value["title"];
             $resource_uri = "https://api.tvmaze.com/singlesearch/shows?q=${title}";
             $showData = $this->invoke($resource_uri);
 
@@ -78,14 +82,15 @@ class showController extends WebServiceInvoker {
         return $summary;
     }
 
-    function getTitleShowInfo($showTitle, $input_page_number, $input_per_page) {
-        $summary = Array();
+    function getTitleShowInfo($showTitle, $input_page_number, $input_per_page)
+    {
+        $summary = array();
         $show_model = new ShowModel();
         $show_model->setPaginationOptions($input_page_number, $input_per_page);
         $titles = $show_model->getTitleWhereLike($showTitle);
         $i = 0;
-        foreach($titles["data"] as $value) {
-            $title = $value["title"]; 
+        foreach ($titles["data"] as $value) {
+            $title = $value["title"];
             $resource_uri = "https://api.tvmaze.com/singlesearch/shows?q=${title}";
             $showData = $this->invoke($resource_uri);
 
@@ -104,14 +109,15 @@ class showController extends WebServiceInvoker {
         return $summary;
     }
 
-    function getReleaseShowInfo($release_date, $input_page_number, $input_per_page) {
-        $summary = Array();
+    function getReleaseShowInfo($release_date, $input_page_number, $input_per_page)
+    {
+        $summary = array();
         $show_model = new ShowModel();
         $show_model->setPaginationOptions($input_page_number, $input_per_page);
         $titles = $show_model->getShowTitleByReleaseDate($release_date);
         $i = 0;
-        foreach($titles["data"] as $value) {
-            $title = $value["title"]; 
+        foreach ($titles["data"] as $value) {
+            $title = $value["title"];
             $resource_uri = "https://api.tvmaze.com/singlesearch/shows?q=${title}";
             $showData = $this->invoke($resource_uri);
 
@@ -130,14 +136,15 @@ class showController extends WebServiceInvoker {
         return $summary;
     }
 
-    function getGenreShowInfo($genre, $input_page_number, $input_per_page) {
-        $summary = Array();
+    function getGenreShowInfo($genre, $input_page_number, $input_per_page)
+    {
+        $summary = array();
         $show_model = new ShowModel();
         $show_model->setPaginationOptions($input_page_number, $input_per_page);
         $titles = $show_model->getShowTitleByGenre($genre);
         $i = 0;
-        foreach($titles["data"] as $value) {
-            $title = $value["title"]; 
+        foreach ($titles["data"] as $value) {
+            $title = $value["title"];
             $resource_uri = "https://api.tvmaze.com/singlesearch/shows?q=${title}";
             $showData = $this->invoke($resource_uri);
 
@@ -155,19 +162,20 @@ class showController extends WebServiceInvoker {
         }
         return $summary;
     }
-    
+
 
     /**
      * Fetches and parses a list of director biography from wikipedia api.
      * 
      * @return array containing some information about biography. 
      */
-    function getIdDirectorInfo($director_id) {
-        $biography = Array();
+    function getIdDirectorInfo($director_id)
+    {
+        $biography = array();
         $director = new DirectorModel();
         $names = $director->getDirectorNameById($director_id);
         $i = 0;
-        foreach($names["data"] as $value) {
+        foreach ($names["data"] as $value) {
             $name = $value["name"];
             $resource_uri = "https://en.wikipedia.org/w/api.php?action=query&format=json&titles=${name}&prop=extracts&exintro=True&explaintext=True";
             $directorData = $this->invoke($resource_uri);
@@ -179,13 +187,13 @@ class showController extends WebServiceInvoker {
 
                 // Parse the list of books and retreive some  
                 // of the contained information.
-                
+
                 // foreach ($directorData as $key => $director) {
                 $page = array_values($directorData['query']['pages']);
-                    #var_dump($page[0]["extract"]);
+                #var_dump($page[0]["extract"]);
                 $biography[$i]["name"] = $value["name"];
                 $biography[$i]["bio"] = $page[0]["extract"];
-                    #$biography["bio"] = $directorData["query"]["pages"][""];
+                #$biography["bio"] = $directorData["query"]["pages"][""];
                 // }
             }
 
@@ -193,5 +201,4 @@ class showController extends WebServiceInvoker {
         }
         return $biography;
     }
-
 }
